@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="br">
+<head>
+	<meta charset="utf-8">
+	<title>FATEC: Relatar Problemas</title>
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i|Montserrat:300,400,500,700" rel="stylesheet">
+	<link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+	<style>
+	.pc {
+		background-image: url("{{ url_for('static', filename='pc.png') }}");
+	}
+	body {
+		background-color: #f6f9ff;
+	}
+	</style>
+	
+	
+	</style>
+</head>
+
+<body>
+	<div class="headertop">
+		<div class="logoarea">
+			<span class="logotext1">
+				<a href="https://fatecsjc-prd.azurewebsites.net">FATEC</a>
+			</span>
+			<span class="logotext2">
+				Problemas Reportados
+			</span>
+			<span class="buttontext">
+				<a href="./reports">ATIVOS</a>
+				&nbsp;&nbsp;&nbsp;
+				<a href="./">HOME</a>
+				&nbsp;&nbsp;&nbsp;
+				<a href="./graficos" class="activepage">ADMIN</a>
+			</span>
+		</div>
+		
+	</div>
+	
+		
+	<form id="formulario" name="formulario" method="POST" action=" {{ url_for('update') }} ">
+		<div class="reportbox">
+			<center>
+				<table>
+					{% if rows|length == 0: %}
+						<tr>
+							<th>sem notificações</th>
+						</tr>
+					{% else %}
+						<tr>
+							<th>ID</th>
+							<th>Data</th>
+							<th>PC</th>
+							<th>Sala</th>
+							<th>Classificação</th>
+							<th>Problema</th>
+							<th>Descrição</th>
+						</tr>
+						{% for row in rows %}
+							<tr>
+								<td>{{row["id"]}}</td>
+								<td>{{row["data"]}}</td>
+								<td>{{row["pc"]}}</td>
+								<td>{{row["sala"]}}</td>
+								<td>{{row["classificacao"]}}</td>
+								<td>{{row["problema"]}}</td>
+								<td>{{row["desc"]}}</td>	
+							</tr>
+						{% endfor %}
+					{% endif %}
+				</table>
+			</center>
+			
+		</div>
+	</form>
+		
+		
+		
+		
+		
+
+	<script>
+
+    lastelement = null; cloneelement = null;
+	
+    salalist = []
+    salanomes = []
+    {% for row in rows %}
+      salalist.push((`{{row['elements']|safe}}`).trim());
+      salanomes.push("{{row['nome']|safe}}");
+    {% endfor %}
+    
+    //SISTEMA QUE DETERMINA O TAMANHO
+    function defineSelection(){
+      preelements = document.querySelector(".pctablemaster").innerHTML;
+      lastobj = preelements.lastIndexOf("obj");
+      if (lastobj != -1){
+        lastobj += 3;
+        if (preelements.substr(lastobj+1, 9) == '" class="'){
+          objsize = 1;
+        } else if (preelements.substr(lastobj+2, 9) == '" class="'){
+          objsize = 2;
+        } else if (preelements.substr(lastobj+3, 9) == '" class="'){
+          objsize = 3;
+        } else if (preelements.substr(lastobj+4, 9) == '" class="'){
+          objsize = 4;
+        } else {
+          objsize = 5;
+        }
+      
+        if (objsize <= 4) {
+          total = preelements.substr(lastobj, objsize)
+        } else {
+          total = 9999;
+        }
+      }
+      else total = 0;
+      
+      counter = 1; elements = [];
+      while (counter <= total){
+        if (preelements.includes("obj"+counter)){
+          elements.push("obj"+counter);
+        }
+        counter+=1;
+      }
+      for (x = 0; x < counter-1; x++){
+        document.getElementById(elements[x]).style.outline = "";
+        selectPC(document.getElementById(elements[x]));
+      }
+    }
+    
+    function selectPC(elmnt) {
+      elmnt.onmousedown = setSelectedElement;
+      
+      function setSelectedElement(){
+        if (elmnt.classList.value.includes("pc")){
+          if (lastelement != null) {
+            lastelement.style.outline = "";
+          }
+          elmnt.style.outline = "2px solid #DDDDDD";
+          lastelement = elmnt;
+          document.getElementById("selecionar").textContent = lastelement.textContent;
+        }
+      }
+    }
+    
+    function toggleVisibilidade(salanumber){
+		if (document.querySelector(".sala").style.visibility == "visible"){
+			document.querySelector(".sala").style.visibility = "hidden";
+		} else {
+			document.querySelector(".sala").style.visibility = "visible";
+		}
+		document.querySelector(".pctablemaster").innerHTML = salalist[salanomes.indexOf(salanumber.toString())];
+		if (document.querySelector(".pctablemaster").innerHTML == "undefined") {
+			document.querySelector(".pctablemaster").innerHTML = "";
+		}
+		defineSelection();
+    }
+	
+	function defSala(value){
+		document.getElementById("sala").value = value;
+	}
+
+    function showBox() {
+        if (document.getElementById("reportbox").style.visibility == "visible"){
+            document.getElementById("reportbox").style.visibility = "hidden";
+        } else {
+            document.getElementById("reportbox").style.visibility = "visible";
+        }
+    }
+	
+	function Resolver(){
+		document.getElementById('formulario').submit();
+	}
+	function Rejeitar(){
+	}
+
+  </script>
+
+</body>
+</html>

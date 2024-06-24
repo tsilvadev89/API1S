@@ -1,0 +1,302 @@
+	body {
+        overflow-x: hidden;
+        margin: 0; padding: 0; border: 0;
+        background-color: #d6d9dd;
+		background-size: cover;
+        background-repeat: no-repeat;
+    }
+	
+	.headertop {
+		padding-left: 60px;
+		padding-top: 30px;
+		height: 92px;
+		position: fixed;
+		left: 0;
+		top: 0;
+		right: 0;
+	}
+	
+	
+	a {
+		text-decoration: none;
+		color: #000000;
+		transition: color 0.5s
+	}
+	a:hover {
+		color: #4154f1;
+	}
+	.logotext1 {
+		font-size: 34px;
+		line-height: 1;
+		font-weight: 700;
+		letter-spacing: 3px;
+		font-family: "Montserrat", sans-serif;
+		padding: 5px;
+		color: #d6d9dd;
+	}
+	.logotext2 {
+		font-size: 34px;
+		line-height: 1;
+		font-weight: 700;
+		letter-spacing: 3px;
+		font-family: "Montserrat", sans-serif;
+		padding: 5px;
+		color: #4154f1;
+	}
+	.buttontext {
+		margin-right: 50px;
+		font-size: 20px;
+		line-height: 1;
+		font-weight: 700;
+		letter-spacing: 3px;
+		text-transform: uppercase;
+		outline: none;
+		display: inline-block;
+		font-family: "Montserrat", sans-serif;
+		padding: 5px;
+		float: right;
+	}
+	.generictext {
+		padding: 30px;
+		font-size: 20px;
+		line-height: 1;
+		font-weight: 700;
+		letter-spacing: 2px;
+		outline: none;
+		display: inline-block;
+		font-family: "Montserrat", sans-serif;
+		padding: 5px;
+	}
+	
+	.activepage {
+		color: #4154f1;
+	}
+	.logoarea {
+		padding-left: 10px;
+		color: #d6d9dd;
+		border-left: 4px solid #4154f1;
+	}
+	
+	.reportbox {
+		margin-top: 150px;
+		margin-left: 60px;
+		margin-right: 60px;
+		margin-bottom: 30px;
+		border: 1px solid #303030;
+		background-color: #e6e9ee;
+		font-family: "Montserrat", sans-serif;
+		font-size: 20px;
+		color: #000000;
+		height: calc(100vh - 300px);
+	}
+	
+	.txtarea {
+		padding: 12px;
+		background-color: #e6e9ee;
+		border: 1px solid #303030;
+		outline: none;
+		width: calc(100% - 24px);
+		height: calc(100% - 90px);
+		resize: none;
+		font-family: "Montserrat", sans-serif;
+		font-size: 20px;
+		color: #000000;
+		line-height: 1;
+		font-weight: 500;
+		letter-spacing: 2px;
+	}
+	
+	.salatext {
+		margin-bottom: 5px;
+		padding-left: 8px;
+		width: 100%;
+		background-color: #d6d9dd;
+		color: #000000;
+		border: 1px solid #303030;
+		outline: none;
+		width: 150px;
+		height: 30px;
+		font-family: "Montserrat", sans-serif;
+		font-size: 20px;
+		line-height: 1;
+		font-weight: 700;
+		letter-spacing: 2px;
+	}
+	
+	.dropdown {
+		position: relative;
+		display: inline-block;
+	}
+	.dropdown-content {
+		display: none;
+		margin-top: -4px;
+		position: absolute;
+		background-color: #161616;
+		border: 1px solid #303030;
+		width: 160px;
+		z-index: 100;
+	}
+
+	
+
+	.genericbutton {
+		margin-left: 20px;
+		margin-right: 20px;
+		font-size: 25px;
+		line-height: 1;
+		font-weight: 500;
+		letter-spacing: 2px;
+		outline: none;
+		display: inline-block;
+		font-family: "Montserrat", sans-serif;
+		padding: 5px;
+		transition: color 0.5s
+	}
+	.genericbutton:hover {
+		color: #4154f1;
+		cursor: pointer;
+	}
+
+	.dropdown:hover .dropdown-content {
+		display: block;
+	}
+	.dropdownlist {
+		padding-top: 10px;
+		padding-bottom: 10px;
+		border-bottom: 1px solid #303030;
+	}
+	.dropdowntext {
+		padding-left: 10px;
+		transition: color 0.5s;
+		color: #a10909;
+	}
+
+	.dropdowntextsugestoes {
+		padding-left: 10px;
+		transition: color 0.5s;
+		color: #16f63f;
+	}
+	
+	.dropdowntext:hover {
+		color: #4154f1;
+		cursor: pointer;
+	}
+	.selectpc {
+		color: #000000;
+		transition: color 0.5s;
+		
+	}
+	.selectpc:hover {
+		color: #4154f1;
+		cursor: pointer;
+	}
+	
+	.enviar {
+		float: right;
+		margin-top: 4px;
+		padding: 30px;
+		font-size: 20px;
+		line-height: 1;
+		font-weight: 700;
+		letter-spacing: 2px;
+		outline: none;
+		display: inline-block;
+		font-family: "Montserrat", sans-serif;
+		padding: 5px;
+		color: #000000;
+		transition: color 0.5s;
+	}
+	.enviar:hover {
+		color: #4154f1;
+		cursor: pointer;
+	}
+	
+	table {
+            width: 100%;
+            border: 1px solid #303030;
+            border-collapse: collapse;
+    }
+    th {
+		padding: 6px;
+		font-size: 20px;
+        border: 1px solid #303030;
+        text-align: left;
+        color: #4154f1;
+        background-color: #d6d9de;
+    }
+    td {
+		padding: 6px;
+		font-size: 20px;
+		border: 1px solid #303030;
+        text-align: left;
+        color: #000000;
+        background-color: #e8e9f3;
+	}
+	
+	.check {
+		display: block;
+		position: relative;
+		padding-left: 35px;
+		margin-bottom: 12px;
+		cursor: pointer;
+		font-size: 22px;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+
+	/* Hide the browser's default checkbox */
+	.check input {
+		position: absolute;
+		opacity: 0;
+		cursor: pointer;
+		height: 0;
+		width: 0;
+	}
+
+	/* Create a custom checkbox */
+	.checkmark {
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 25px;
+		width: 25px;
+		background-color: #eee;
+		border: 1px solid #000000;
+	}
+
+	/* On mouse-over, add a grey background color */
+	.check:hover input ~ .checkmark {
+		background-color: #ccc;
+	}
+
+	/* When the checkbox is checked, add a blue background */
+	.check input:checked ~ .checkmark {
+		background-color: #4154f1;
+	}
+
+	/* Create the checkmark/indicator (hidden when not checked) */
+	.checkmark:after {
+		content: "";
+		position: absolute;
+		display: none;
+	}
+
+	/* Show the checkmark when checked */
+	.check input:checked ~ .checkmark:after {
+		display: block;
+	}
+
+	/* Style the checkmark/indicator */
+	.check .checkmark:after {
+		left: 9px;
+		top: 5px;
+		width: 5px;
+		height: 10px;
+		border: solid white;
+		border-width: 0 3px 3px 0;
+		-webkit-transform: rotate(45deg);
+		-ms-transform: rotate(45deg);
+		transform: rotate(45deg);
+	}

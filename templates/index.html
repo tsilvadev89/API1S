@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="br">
+<head>
+	<meta charset="utf-8">
+	<title>FATEC: Relatar Problemas</title>
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i|Montserrat:300,400,500,700" rel="stylesheet">
+	<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+	<style>
+	.pc {
+		background-image: url("{{ url_for('static', filename='pc.png') }}");
+
+	}
+	.fakebg {
+		background-image: url("{{ url_for('static', filename='lab.jpg') }}");
+		background-size: cover;
+        background-repeat: no-repeat;
+		position: fixed; 
+		width: 100vw; height: 
+		100vh; 
+		top: 0; 
+		left: 0; 
+		z-index: -1;
+		opacity: 0;
+	}
+	body {
+		background-image: url("{{ url_for('static', filename='fatec.jpg') }}");
+		background-size: cover;
+        background-repeat: no-repeat;
+    }
+	</style>
+	
+</head>
+
+<body>
+	<div class="sala">
+		<div class="editarea">
+			<div class="pctablemaster">
+				
+			</div>
+			<div class="close" onclick="toggleVisibilidade()">x</div>
+		</div>
+	</div>
+	<div class="headertop">
+		<div class="logoarea">
+			<span class="logotext1">
+				<a href="https://fatecsjc-prd.azurewebsites.net">FATEC</a>
+			</span>
+			<span class="logotext2">
+				Reportar Problemas
+			</span>
+			<span class="buttontext">
+				<a href="./" class="activepage">HOME</a>
+				&nbsp;&nbsp;&nbsp;
+				<a onclick="logar()">ADMIN</a>
+			</span>
+		</div>
+		
+	</div>
+		<form id="formulario" name="formulario" method="POST" action=" {{ url_for('send') }} ">
+		<input type="hidden" id="classificacao" name="classificacao">
+		<div class="reportbox" style="visibility: hidden;">
+			<span class="generictext">SALA:
+				<span class="dropdown">
+					<input class="salatext" type="text" id="sala" name="sala">
+					<div class="dropdown-content">
+					{% for row in rows %}
+						<div class="dropdownlist"><span id="salafield" class="dropdowntext" onclick="defSala({{row['nome']|safe}})">{{row['nome']|safe}}</span></div>
+					{% endfor %}
+					</div>
+				</span>
+			</span>
+			
+			<span class="generictext">COMPUTADOR: <span id="selecionar" class="selectpc" onclick="toggleVisibilidade(document.getElementById('sala').value)">SELECIONAR</span></span>
+			
+			<span class="generictext" >PROBLEMA:
+                <span class="dropdown" >
+                    <input class="sugestoestext" type="text" id="problema" name="problema">
+                    <div class="dropdown-content" style="width: 600px">
+                    {% for row in problemas %}
+						<div class="dropdownlist"><span id="problemafield" class="dropdowntext" onclick="defSolucao(`{{row['problema']|safe}}`, `{{row['sugestao']|safe}}`, `{{row['id']}}`)">{{row['problema']|safe}}</span></div>
+                    {% endfor %}
+                    </div>
+                </span>
+            </span>
+			
+			<input type="hidden" id="computador" name="computador">
+			<span class="enviar" onclick="sendForm()">ENVIAR</span>
+			<p id="sugestao">Possiveis soluções aparecerão aqui</p>
+			<textarea id="descricao" name="descricao" class="txtarea" placeholder="Descreva o problema"></textarea>
+		</div>
+		</form>
+		
+		<center>
+		<div class="botaoaparecer" onclick="toggleReport()">
+			<span class="generictitle">Reportar Problema</span>
+		</div>
+		</center>
+
+	<div class="fakebg"></div>
+	<script>
+	report = 0;
+    lastelement = null; cloneelement = null;
+	
+    salalist = []
+    salanomes = []
+    {% for row in rows %}
+      salalist.push((`{{row['elements']|safe}}`).trim());
+      salanomes.push("{{row['nome']|safe}}");
+    {% endfor %}
+    
+    //SISTEMA QUE DETERMINA O TAMANHO
+    function defineSelection(){
+      preelements = document.querySelector(".pctablemaster").innerHTML;
+      lastobj = preelements.lastIndexOf("obj");
+      if (lastobj != -1){
+        lastobj += 3;
+        if (preelements.substr(lastobj+1, 9) == '" class="'){
+          objsize = 1;
+        } else if (preelements.substr(lastobj+2, 9) == '" class="'){
+          objsize = 2;
+        } else if (preelements.substr(lastobj+3, 9) == '" class="'){
+          objsize = 3;
+        } else if (preelements.substr(lastobj+4, 9) == '" class="'){
+          objsize = 4;
+        } else {
+          objsize = 5;
+        }
+      
+        if (objsize <= 4) {
+          total = preelements.substr(lastobj, objsize)
+        } else {
+          total = 9999;
+        }
+      }
+      else total = 0;
+      
+      counter = 1; elements = [];
+      while (counter <= total){
+        if (preelements.includes("obj"+counter)){
+          elements.push("obj"+counter);
+        }
+        counter+=1;
+      }
+      for (x = 0; x < counter-1; x++){
+        document.getElementById(elements[x]).style.outline = "";
+        selectPC(document.getElementById(elements[x]));
+      }
+    }
+    
+    function selectPC(elmnt) {
+      elmnt.onmousedown = setSelectedElement;
+      
+      function setSelectedElement(){
+        if (elmnt.classList.value.includes("pc")){
+          if (lastelement != null) {
+            lastelement.style.outline = "";
+          }
+          elmnt.style.outline = "2px solid #FF0000";
+          lastelement = elmnt;
+          document.getElementById("selecionar").textContent = lastelement.textContent;
+		  document.getElementById("computador").value = document.getElementById("selecionar").textContent;
+        }
+      }
+    }
+    
+    function toggleVisibilidade(salanumber){
+		defSala(document.getElementById("sala").value);
+		if (document.querySelector(".sala").style.visibility == "visible"){
+			document.querySelector(".sala").style.visibility = "hidden";
+		} else {
+			document.querySelector(".sala").style.visibility = "visible";
+		}
+		document.querySelector(".pctablemaster").innerHTML = salalist[salanomes.indexOf(salanumber.toString())];
+		if (document.querySelector(".pctablemaster").innerHTML == "undefined") {
+			document.querySelector(".pctablemaster").innerHTML = "";
+		}
+		defineSelection();
+    }
+	
+	function defSala(value){
+		document.getElementById("sala").value = value;
+	}
+	function defSolucao(problema, sugestao, id){
+		document.getElementById("problema").value = problema;
+		document.getElementById("sugestao").innerHTML = "Resolva agora mesmo: " + sugestao;
+		
+		if (id == 1 || id == 2 || id == 4 || id == 6 || id == 7 || id == 9){
+			classificacao = "Hardware";
+		} else {
+			if (id == 3 || id == 5 || id == 8){
+				classificacao = "Software";
+			} else {
+				classificacao = "Outro";
+			}
+		}
+		document.getElementById("classificacao").value = classificacao;
+	}
+
+    function showBox() {
+        if (document.getElementById("reportbox").style.visibility == "visible"){
+            document.getElementById("reportbox").style.visibility = "hidden";
+        } else {
+            document.getElementById("reportbox").style.visibility = "visible";
+        }
+    }
+    function sendForm() {
+		document.getElementById("computador").value = document.getElementById("selecionar").textContent;
+		
+		console.log(document.getElementById("problema").value + " " + document.getElementById("classificacao"));
+        document.getElementById('formulario').submit();
+    }
+	
+	var id = null;
+	function toggleReport() {
+		document.querySelector(".botaoaparecer").style.visibility = "hidden";
+		document.querySelector(".reportbox").style.visibility = "visible";
+		opacityvalue = 0; opacityvalue2 = 0;
+		document.querySelector(".reportbox").style.opacity = opacityvalue;
+		clearInterval(id);
+		id = setInterval(frame, 5);
+		function frame() {
+			if (opacityvalue >= 1) {
+				if (opacityvalue2 >= 1){
+					clearInterval(id);
+				} else {
+					opacityvalue2+=0.01;
+					document.querySelector(".reportbox").style.opacity = opacityvalue2;
+				}
+			} else {
+				opacityvalue+=0.01; 
+				
+				document.querySelector(".fakebg").style.opacity = opacityvalue;
+			}
+		}
+	}
+	
+	function logar() {
+		senha = prompt("Digite a senha:", "admin");
+		if (senha == "admin") {
+			window.location.href = '../graficos';
+		} else {
+			window.alert("Senha errada");
+		}
+	}
+  </script>
+
+</body>
+</html>

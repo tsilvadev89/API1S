@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FATEC: Mapa de Salas</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.1">
+	<link rel="stylesheet" href="{{ url_for('static', filename='edit.css') }}">
+	<style>
+	.pc {
+		background-image: url("{{ url_for('static', filename='pc.png') }}");
+	}
+	</style>
+</head>
+<body>
+<center>
+<div class="editarea">
+	<div class="pctablemaster">
+		{% for row in elmnts %}
+			{{row['elements']|safe}}
+		{% endfor %}
+    </div>
+</div>
+</center>
+
+<div class="editobj">
+    
+</div>
+<form onkeydown="return event.key != 'Enter';" id="form" name="form" method="POST" action=" {{ url_for('edited') }} ">
+<input type="hidden" id="actiontype" name="actiontype">
+<input type="hidden" id="elementcontent" name="elementcontent">
+<input type="hidden" id="totalcontent" name="totalcontent">
+<input type="hidden" id="selectedvalue" name="selectedvalue">
+<div class="editclass">
+	<span class="admin">admin</span><span class="edittxt">&nbsp;</span>
+	<span class="edittxt">&nbsp;&nbsp;&nbsp;id: </span><input class="txtid" type="text" id="txtid" name="txtid" disabled><span class="edittxt">&nbsp;</span>
+    <input class="txtnew" type="text" id="txtnew" name="txtnew"><span class="edittxt"></span>
+    <span class="adicionar">adicionar</span><span class="edittxt">&nbsp;</span>
+    <select class="salalist" name="salalist" id="salalist">
+		{% for row in rows %}
+			{% if selected == row['nome']: %}
+				<option value="{{row['nome']}}" selected> {{row['nome']}} </option>
+			{% else %}
+				<option value="{{row['nome']}}"> {{row['nome']}} </option>
+			{% endif %}
+		{% endfor %}
+    </select><span class="edittxt">&nbsp;</span>
+    <span class="carregar">carregar </span><span class="edittxt">&nbsp;</span>
+    <span class="salvar">salvar</span><span class="edittxt">&nbsp;&nbsp;&nbsp;</span>
+    <span class="deletar">deletar</span>
+</div>
+<div class="editsize">
+	<span class="edittxt">&nbsp;x: </span><input class="txtx0" type="text" id="xpos" name="xpos"><span class="edittxt">&nbsp;largura: </span><input class="txtx1" type="text" id="xsize" name="xsize">
+    <span class="edittxt">&nbsp;&nbsp;name: </span><input class="txtname" type="text" id="txtname" name="txtname"><span class="edittxt">&nbsp;</span>
+    <span class="pcbutton">novo PC&nbsp;&nbsp;</span><span class="edittxt">&nbsp;</span>
+    <span class="edit">edit&nbsp;</span><span class="edittxt">&nbsp;</span>
+    <span class="resize">redimensionar</span>
+    <br>
+    <span class="edittxt">&nbsp;y: </span><input class="txty0" type="text" id="ypos" name="ypos"><span class="edittxt">&nbsp;&nbsp;altura: </span><input class="txty1" type="text" id="ysize" name="ysize">
+	<span class="edittxt">angulo: </span><input class="txtangle" type="text" id="txtangle" name="txtangle"><span class="edittxt">&nbsp;</span>
+    <span class="mesabutton">nova mesa</span><span class="edittxt">&nbsp;</span>
+    <span class="clone">clone</span><span class="edittxt">&nbsp;</span>
+    <span class="delete">deletar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+</div>
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+	//DEFINICOES INICIAS
+    editObj();
+	setSelected();
+	
+	mode = 1;
+	var cursorx = 0;
+    var cursory = 0;
+	lastelement = null; cloneelement = null;
+    document.onmousemove = mouseMove;
+	
+	//SISTEMA QUE DETERMINA O TAMANHO
+	preelements = document.querySelector(".pctablemaster").innerHTML;
+	lastobj = preelements.lastIndexOf("obj");
+	if (lastobj != -1){
+		lastobj += 3;
+		if (preelements.substr(lastobj+1, 9) == '" class="'){
+			objsize = 1;
+		} else if (preelements.substr(lastobj+2, 9) == '" class="'){
+			objsize = 2;
+		} else if (preelements.substr(lastobj+3, 9) == '" class="'){
+			objsize = 3;
+		} else if (preelements.substr(lastobj+4, 9) == '" class="'){
+			objsize = 4;
+		} else {
+			objsize = 5;
+		}
+	
+		if (objsize <= 4) {
+			total = preelements.substr(lastobj, objsize)
+		} else {
+			total = 9999;
+		}
+	}
+	else total = 0;
+	
+	counter = 1; elements = [];
+	while (counter <= total){
+		if (preelements.includes("obj"+counter)){
+			elements.push("obj"+counter);
+		}
+		counter+=1;
+	}
+	elements.forEach(firstDefineElement);
+
+	//SISTEMA DE ARRASTAR
+    function dragElement(elmnt) {
+        var pos1 = elmnt.offsetTop, pos2 = elmnt.offsetLeft, pos3 = 0, pos4 = 0;
+        elmnt.onmousedown = dragMouseDown;
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            e.preventDefault();
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+
+            document.getElementById("xsize").value = elmnt.clientWidth;
+            document.getElementById("ysize").value = elmnt.clientHeight;
+            document.getElementById("xpos").value = elmnt.offsetLeft;
+            document.getElementById("ypos").value = elmnt.offsetTop;
+            document.getElementById("txtid").value = elmnt.id;
+            document.getElementById("txtname").value = elmnt.textContent;
+			
+			if (elmnt.style.transform == '') {
+				elmnt.style.transform = 'rotate(0deg)';
+			}
+			document.getElementById("txtangle").value = ((elmnt.style.transform).replace('rotate(','')).replace('deg)', '');
+
+            if (elmnt.classList.value.includes("pc")) {
+                document.getElementById("ysize").disabled = true;
+            } else {
+                document.getElementById("ysize").disabled = false;
+            }
+            if (elmnt.classList.value.includes("mesa")) {
+                document.getElementById("txtname").disabled = true;
+            } else {
+                document.getElementById("txtname").disabled = false;
+            }
+            elmnt.style.outline = "2px solid #BBBBBB";
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+
+            mouseMove(e);
+
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.getElementById("xpos").value = elmnt.offsetLeft;
+            document.getElementById("ypos").value = elmnt.offsetTop;
+            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            elements.forEach(clearOutline);
+            elmnt.style.outline = "2px solid #DDDDDD";
+            lastelement = elmnt;
+            document.onmouseup = null;
+            document.onmousemove = mouseMove;
+        }
+    }
+
+    function clearOutline(item) {
+        document.getElementById(item).style.outline = "none";
+    }
+
+	//EVENTOS CAIXAS DE TEXTO
+    document.querySelector('.txtx1').addEventListener('input', function (event) {
+        //lastelement.setAttribute('style', 'width: '+document.getElementById("xsize").value+'px; top: 100px');
+        lastelement.style.width = document.getElementById("xsize").value + "px";
+        lastelement.style.height = document.getElementById("ysize").value + "px";
+        if (lastelement.classList.value.includes("pc")){
+            lastelement.style.height = document.getElementById("xsize").value + "px";
+            document.getElementById("ysize").value = document.getElementById("xsize").value;
+        }
+    });
+    document.querySelector('.txty1').addEventListener('input', function (event) {
+        lastelement.style.width = document.getElementById("xsize").value + "px";
+        lastelement.style.height = document.getElementById("ysize").value + "px";
+    });
+
+    document.querySelector('.txtx0').addEventListener('input', function (event) {
+        lastelement.style.left = document.getElementById("xpos").value + "px";
+    });
+    document.querySelector('.txty0').addEventListener('input', function (event) {
+        lastelement.style.top = document.getElementById("ypos").value + "px";
+    });
+
+    document.querySelector('.txtname').addEventListener('input', function (event) {
+        lastelement.innerHTML = '<div class="innertext">' + document.getElementById("txtname").value + '</div>';
+    });
+	
+	document.querySelector('.txtangle').addEventListener('input', function (event) {
+		lastelement.style.transform = 'rotate(' + document.getElementById('txtangle').value + 'deg)';
+	});
+
+	//FUNCOES DOS ELEMENTOS
+    function addPC(yvalue, xvalue, ysize, xsize, texto, ang) {
+        total++;
+        document.querySelector(".pctablemaster").innerHTML += '<div id="obj' + total + '" class="pc" style="top: ' + yvalue + 'px; left: ' + xvalue + 'px; height: ' + ysize + 'px; width: ' + xsize + 'px; transform: ' + ang + ';"><div class="innertext">' + texto + '</div></div>';
+        elements.push("obj" + total)
+        elements.forEach(defineElement);
+    }
+    function addMesa(yvalue, xvalue, ysize, xsize, ang) {
+        total++;
+        document.querySelector(".pctablemaster").innerHTML += '<div id="obj' + total + '" class="mesa" style="top: ' + yvalue + 'px; left: ' + xvalue + 'px; height: ' + ysize + 'px; width: ' + xsize + 'px; transform: ' + ang + ';"></div>';
+        elements.push("obj" + total)
+        elements.forEach(defineElement);  
+    }
+	
+    function copyObj(){
+        cloneelement = lastelement;
+    }
+
+    function cloneObj(){
+         if (lastelement.classList.value.includes("pc")) {
+            addPC(lastelement.offsetTop, lastelement.offsetLeft, lastelement.clientHeight, lastelement.clientWidth, lastelement.textContent, lastelement.style.transform);
+        } else if (lastelement.classList.value.includes("mesa")) {
+            addMesa(lastelement.offsetTop, lastelement.offsetLeft, lastelement.clientHeight, lastelement.clientWidth, lastelement.style.transform);
+        }
+    }
+    function pasteObj(){
+        pastex = cursorx - $('.editarea').offset().left - Math.round(cloneelement.clientWidth/2);
+        pastey = cursory - $('.editarea').offset().top - Math.round(cloneelement.clientHeight/2);
+        //console.log(pastex + " " + pastey);
+        if (cloneelement.classList.value.includes("pc")) {
+            addPC(pastey, pastex, cloneelement.clientHeight, cloneelement.clientWidth, cloneelement.textContent, cloneelement.style.transform);
+            cloneelement = document.getElementById("obj"+total);
+        } else if (cloneelement.classList.value.includes("mesa")) {
+            addMesa(pastey, pastex, cloneelement.clientHeight, cloneelement.clientWidth, cloneelement.style.transform);
+            cloneelement = document.getElementById("obj"+total);
+        }
+    }
+    function deleteObj(){
+        elements.splice(elements.indexOf(lastelement.id), 1)
+        lastelement.remove()
+    }
+    function editObj(){
+        if (document.querySelector(".editobj").style.display == "none"){
+            document.querySelector(".editobj").style.display = "initial";
+        } else {
+            document.querySelector(".editobj").style.display = "none";
+        }
+    }
+
+	//EVENTOS DOS BOTOES
+    document.querySelector(".pcbutton").addEventListener("click", function (event) {
+        addPC(0, 0, 80, 80, "");
+    });
+    document.querySelector(".mesabutton").addEventListener("click", function (event) {
+        addMesa(0, 0, 100, 100, "");
+    });
+
+    document.querySelector(".delete").addEventListener("click", function (event) {
+        deleteObj();
+    });
+
+    document.querySelector(".clone").addEventListener("click", function (event) {
+        cloneObj();
+    });
+
+    document.querySelector(".edit").addEventListener("click", function (event) {
+        editObj();
+    });
+	
+	document.querySelector(".adicionar").addEventListener("click", function (event) {
+		document.getElementById("actiontype").value = "add";
+		sendForm();
+	});
+	document.querySelector(".carregar").addEventListener("click", function (event) {
+		document.getElementById("actiontype").value = "load";
+		sendForm();
+	});
+	document.querySelector(".salvar").addEventListener("click", function (event) {
+		document.getElementById("actiontype").value = "save";
+		sendForm();
+	});
+	document.querySelector(".deletar").addEventListener("click", function (event) {
+		document.getElementById("actiontype").value = "del";
+		sendForm();
+	});
+
+    document.querySelector(".resize").addEventListener("click", function (event) {
+        if (mode == 1) {
+            elements.forEach(disableElement);
+            mode = 2;
+            document.querySelector(".resize").textContent = "movimentar" + String.fromCharCode(160) + String.fromCharCode(160) + String.fromCharCode(160);
+            lastelement.style.resize = "both";
+            document.onmousemove = resizeUpdateValues;
+        } 
+        else {
+            elements.forEach(defineElement);
+            mode = 1;
+            document.querySelector(".resize").textContent = "redimensionar";
+            lastelement.style.resize = "none";
+        }
+    });
+	
+	document.querySelector(".salalist").addEventListener("click", function (event) {
+		setSelected();
+    });
+	document.querySelector(".admin").addEventListener("click", function (event) {
+		window.location.href = "{{ url_for('graficos') }}";
+	});
+
+
+	//EVENTOS DO TECLADO
+    $(document).ready(function() {
+    var ctrlDown = false;
+    var ctrlKey = 17;
+    var cmdKey = 91;
+    var vKey = 86;
+    var cKey = 67;
+    var cDelete = 46;
+
+    $(document).keydown(function(e) {
+        if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+    }).keyup(function(e) {
+        if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+    });
+
+    $(".no-copy-paste").keydown(function(e) {
+        if (ctrlDown && (e.keyCode == vKey || e.keyCode == cKey)) return false;
+    });
+    
+    $(document).keydown(function(e) {
+        if (ctrlDown && (e.keyCode == cKey)) {
+            copyObj();
+        }
+        if (ctrlDown && (e.keyCode == vKey)) {
+            pasteObj();
+        }
+        if (e.keyCode == cDelete) {
+            deleteObj();
+        }
+		});
+	});
+
+	
+	//FUNCOES GERAIS
+	function firstDefineElement(item) {
+        dragElement(document.getElementById(item));
+    }
+	function defineElement(item) {
+        dragElement(document.getElementById(item));
+    }
+	
+    function disableElement(item) {
+        document.getElementById(item).onmousedown = null;
+        document.getElementById(item).onmousemove = null;
+    }
+	function resizeUpdateValues() {
+        document.getElementById("xsize").value = lastelement.clientWidth;
+        document.getElementById("ysize").value = lastelement.clientHeight;
+        if (lastelement.classList.value.includes("pc")){
+            lastelement.style.height = document.getElementById("xsize").value + "px";
+            document.getElementById("ysize").value = document.getElementById("xsize").value;
+        }
+    }
+	function setSelected(){
+		document.getElementById("selectedvalue").value = document.getElementById("salalist").value;
+	}
+	
+	function mouseMove(e){
+        cursorx = event.pageX;
+        cursory = event.pageY;
+    }
+	
+	function sendForm(){
+		document.getElementById("elementcontent").value = document.querySelector(".pctablemaster").innerHTML;
+		document.getElementById("totalcontent").value = total;
+        document.getElementById('form').submit();
+    }
+	
+	var msg = "{{ msg }}";
+	if (msg != ""){
+		alert(msg);
+	}
+</script>
+
+</body>
+</html>
+
